@@ -3,54 +3,306 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Calculator</title>
+  <title>Calculator Pro</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #1a1a2e; }
-    .calculator { background: #16213e; padding: 30px; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); width: 320px; }
-    h1 { color: #e94560; text-align: center; margin-bottom: 20px; font-size: 1.5rem; }
-    .display { background: #0f3460; color: #fff; font-size: 2rem; text-align: right; padding: 15px; border-radius: 10px; margin-bottom: 20px; min-height: 60px; word-break: break-all; }
-    .buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-    button { padding: 18px; font-size: 1.2rem; border: none; border-radius: 10px; cursor: pointer; background: #0f3460; color: #fff; transition: background 0.2s; }
-    button:hover { background: #1a4a8a; }
-    .operator { background: #e94560; }
-    .operator:hover { background: #ff6b81; }
-    .equals { background: #53d769; color: #000; }
-    .equals:hover { background: #6be380; }
-    .clear { background: #ff6348; grid-column: span 2; }
-    .clear:hover { background: #ff7f50; }
-    .result-text { color: #aaa; font-size: 0.9rem; text-align: center; margin-top: 10px; min-height: 20px; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: #0a0a0a;
+      overflow: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle at 30% 40%, rgba(120, 80, 255, 0.08) 0%, transparent 50%),
+                  radial-gradient(circle at 70% 60%, rgba(255, 100, 80, 0.06) 0%, transparent 50%);
+      animation: bgShift 20s ease-in-out infinite alternate;
+      z-index: 0;
+    }
+
+    @keyframes bgShift {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(5%, -3%); }
+    }
+
+    .calculator {
+      position: relative;
+      z-index: 1;
+      background: rgba(22, 22, 26, 0.85);
+      backdrop-filter: blur(40px);
+      -webkit-backdrop-filter: blur(40px);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 28px;
+      border-radius: 24px;
+      width: 360px;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6),
+                  0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      padding: 0 4px;
+    }
+
+    .header h1 {
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: rgba(255, 255, 255, 0.35);
+    }
+
+    .dot-group {
+      display: flex;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .dot:nth-child(1) { background: #ff5f57; }
+    .dot:nth-child(2) { background: #ffbd2e; }
+    .dot:nth-child(3) { background: #28c840; }
+
+    .display-area {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 20px 22px;
+      margin-bottom: 22px;
+      min-height: 100px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: flex-end;
+    }
+
+    .expression {
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.3);
+      font-weight: 300;
+      margin-bottom: 6px;
+      min-height: 20px;
+      word-break: break-all;
+    }
+
+    .display {
+      font-size: 2.6rem;
+      font-weight: 300;
+      color: #fff;
+      word-break: break-all;
+      line-height: 1.2;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    button {
+      padding: 20px;
+      font-size: 1.15rem;
+      font-family: 'Inter', sans-serif;
+      font-weight: 400;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      color: #fff;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      transition: all 0.15s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    button::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 14px;
+      opacity: 0;
+      background: radial-gradient(circle at center, rgba(255,255,255,0.15), transparent 70%);
+      transition: opacity 0.3s;
+    }
+
+    button:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    button:active {
+      transform: scale(0.96);
+      box-shadow: none;
+    }
+
+    button:active::after {
+      opacity: 1;
+    }
+
+    .operator {
+      background: rgba(120, 80, 255, 0.2);
+      border-color: rgba(120, 80, 255, 0.15);
+      color: #a78bfa;
+      font-weight: 600;
+    }
+
+    .operator:hover {
+      background: rgba(120, 80, 255, 0.35);
+    }
+
+    .equals {
+      background: linear-gradient(135deg, #7c3aed, #6d28d9);
+      border-color: transparent;
+      color: #fff;
+      font-weight: 600;
+      box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+    }
+
+    .equals:hover {
+      background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+      box-shadow: 0 6px 28px rgba(124, 58, 237, 0.45);
+    }
+
+    .clear {
+      grid-column: span 2;
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.1);
+      color: #f87171;
+      font-weight: 600;
+    }
+
+    .clear:hover {
+      background: rgba(239, 68, 68, 0.3);
+    }
+
+    .zero {
+      grid-column: span 2;
+    }
+
+    .status-bar {
+      margin-top: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-height: 20px;
+    }
+
+    .status-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #28c840;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .status-dot.active {
+      opacity: 1;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 1; }
+    }
+
+    .status-text {
+      font-size: 0.7rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.2);
+      transition: color 0.3s;
+    }
+
+    .status-text.active {
+      color: rgba(40, 200, 64, 0.6);
+    }
+
+    .status-text.error {
+      color: rgba(248, 113, 113, 0.6);
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .display.updated {
+      animation: slideUp 0.25s ease-out;
+    }
   </style>
 </head>
 <body>
   <div class="calculator">
-    <h1>Calculator</h1>
-    <div class="display" id="display">0</div>
+    <div class="header">
+      <h1>Calc</h1>
+      <div class="dot-group">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+    </div>
+
+    <div class="display-area">
+      <div class="expression" id="expression"></div>
+      <div class="display" id="display">0</div>
+    </div>
+
     <div class="buttons">
-      <button class="clear" onclick="clearDisplay()">C</button>
-      <button onclick="appendToDisplay('/')" class="operator">/</button>
-      <button onclick="appendToDisplay('*')" class="operator">*</button>
+      <button class="clear" onclick="clearDisplay()">AC</button>
+      <button onclick="appendToDisplay('/')" class="operator">&divide;</button>
+      <button onclick="appendToDisplay('*')" class="operator">&times;</button>
+
       <button onclick="appendToDisplay('7')">7</button>
       <button onclick="appendToDisplay('8')">8</button>
       <button onclick="appendToDisplay('9')">9</button>
-      <button onclick="appendToDisplay('-')" class="operator">-</button>
+      <button onclick="appendToDisplay('-')" class="operator">&minus;</button>
+
       <button onclick="appendToDisplay('4')">4</button>
       <button onclick="appendToDisplay('5')">5</button>
       <button onclick="appendToDisplay('6')">6</button>
       <button onclick="appendToDisplay('+')" class="operator">+</button>
+
       <button onclick="appendToDisplay('1')">1</button>
       <button onclick="appendToDisplay('2')">2</button>
       <button onclick="appendToDisplay('3')">3</button>
       <button class="equals" onclick="calculate()">=</button>
-      <button onclick="appendToDisplay('0')" style="grid-column: span 2;">0</button>
+
+      <button class="zero" onclick="appendToDisplay('0')">0</button>
       <button onclick="appendToDisplay('.')">.</button>
     </div>
-    <div class="result-text" id="resultText"></div>
+
+    <div class="status-bar">
+      <div class="status-dot" id="statusDot"></div>
+      <div class="status-text" id="statusText">ready</div>
+    </div>
   </div>
 
   <script>
-    let display = document.getElementById("display");
-    let resultText = document.getElementById("resultText");
+    const display = document.getElementById("display");
+    const expression = document.getElementById("expression");
+    const statusText = document.getElementById("statusText");
+    const statusDot = document.getElementById("statusDot");
     let current = "0";
 
     function appendToDisplay(val) {
@@ -60,23 +312,39 @@
         current += val;
       }
       display.textContent = current;
-      resultText.textContent = "";
+      setStatus("ready", "");
     }
 
     function clearDisplay() {
       current = "0";
       display.textContent = current;
-      resultText.textContent = "";
+      expression.textContent = "";
+      setStatus("ready", "");
+    }
+
+    function setStatus(text, type) {
+      statusText.textContent = text;
+      statusText.className = "status-text" + (type ? " " + type : "");
+      statusDot.className = "status-dot" + (type === "active" ? " active" : "");
+    }
+
+    function animateResult() {
+      display.classList.remove("updated");
+      void display.offsetWidth;
+      display.classList.add("updated");
     }
 
     async function calculate() {
       const match = current.match(/^(-?\d+\.?\d*)\s*([+\-*/])\s*(-?\d+\.?\d*)$/);
       if (!match) {
-        resultText.textContent = "Format: number operator number";
+        setStatus("invalid format", "error");
         return;
       }
 
       const [, a, operator, b] = match;
+      const opSymbol = { "+": "+", "-": "\u2212", "*": "\u00d7", "/": "\u00f7" };
+      expression.textContent = `${a} ${opSymbol[operator] || operator} ${b}`;
+      setStatus("computing", "active");
 
       try {
         const res = await fetch("/calculate", {
@@ -86,16 +354,30 @@
         });
         const data = await res.json();
         if (data.error) {
-          resultText.textContent = data.error;
+          setStatus(data.error, "error");
         } else {
-          display.textContent = data.result;
-          current = String(data.result);
-          resultText.textContent = "Calculated via server";
+          const result = parseFloat(data.result.toFixed(10));
+          display.textContent = result;
+          current = String(result);
+          animateResult();
+          setStatus("done", "active");
+          setTimeout(() => setStatus("ready", ""), 2000);
         }
       } catch {
-        resultText.textContent = "Server error";
+        setStatus("server error", "error");
       }
     }
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key >= "0" && e.key <= "9") appendToDisplay(e.key);
+      else if (["+", "-", "*", "/", "."].includes(e.key)) appendToDisplay(e.key);
+      else if (e.key === "Enter") calculate();
+      else if (e.key === "Escape" || e.key === "Delete") clearDisplay();
+      else if (e.key === "Backspace") {
+        current = current.length > 1 ? current.slice(0, -1) : "0";
+        display.textContent = current;
+      }
+    });
   </script>
 </body>
 </html>
