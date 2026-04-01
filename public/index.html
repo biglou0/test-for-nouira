@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculator</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #1a1a2e; }
+    .calculator { background: #16213e; padding: 30px; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); width: 320px; }
+    h1 { color: #e94560; text-align: center; margin-bottom: 20px; font-size: 1.5rem; }
+    .display { background: #0f3460; color: #fff; font-size: 2rem; text-align: right; padding: 15px; border-radius: 10px; margin-bottom: 20px; min-height: 60px; word-break: break-all; }
+    .buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    button { padding: 18px; font-size: 1.2rem; border: none; border-radius: 10px; cursor: pointer; background: #0f3460; color: #fff; transition: background 0.2s; }
+    button:hover { background: #1a4a8a; }
+    .operator { background: #e94560; }
+    .operator:hover { background: #ff6b81; }
+    .equals { background: #53d769; color: #000; }
+    .equals:hover { background: #6be380; }
+    .clear { background: #ff6348; grid-column: span 2; }
+    .clear:hover { background: #ff7f50; }
+    .result-text { color: #aaa; font-size: 0.9rem; text-align: center; margin-top: 10px; min-height: 20px; }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <h1>Calculator</h1>
+    <div class="display" id="display">0</div>
+    <div class="buttons">
+      <button class="clear" onclick="clearDisplay()">C</button>
+      <button onclick="appendToDisplay('/')" class="operator">/</button>
+      <button onclick="appendToDisplay('*')" class="operator">*</button>
+      <button onclick="appendToDisplay('7')">7</button>
+      <button onclick="appendToDisplay('8')">8</button>
+      <button onclick="appendToDisplay('9')">9</button>
+      <button onclick="appendToDisplay('-')" class="operator">-</button>
+      <button onclick="appendToDisplay('4')">4</button>
+      <button onclick="appendToDisplay('5')">5</button>
+      <button onclick="appendToDisplay('6')">6</button>
+      <button onclick="appendToDisplay('+')" class="operator">+</button>
+      <button onclick="appendToDisplay('1')">1</button>
+      <button onclick="appendToDisplay('2')">2</button>
+      <button onclick="appendToDisplay('3')">3</button>
+      <button class="equals" onclick="calculate()">=</button>
+      <button onclick="appendToDisplay('0')" style="grid-column: span 2;">0</button>
+      <button onclick="appendToDisplay('.')">.</button>
+    </div>
+    <div class="result-text" id="resultText"></div>
+  </div>
+
+  <script>
+    let display = document.getElementById("display");
+    let resultText = document.getElementById("resultText");
+    let current = "0";
+
+    function appendToDisplay(val) {
+      if (current === "0" && val !== "." && !"/*-+".includes(val)) {
+        current = val;
+      } else {
+        current += val;
+      }
+      display.textContent = current;
+      resultText.textContent = "";
+    }
+
+    function clearDisplay() {
+      current = "0";
+      display.textContent = current;
+      resultText.textContent = "";
+    }
+
+    async function calculate() {
+      const match = current.match(/^(-?\d+\.?\d*)\s*([+\-*/])\s*(-?\d+\.?\d*)$/);
+      if (!match) {
+        resultText.textContent = "Format: number operator number";
+        return;
+      }
+
+      const [, a, operator, b] = match;
+
+      try {
+        const res = await fetch("/calculate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ a, b, operator })
+        });
+        const data = await res.json();
+        if (data.error) {
+          resultText.textContent = data.error;
+        } else {
+          display.textContent = data.result;
+          current = String(data.result);
+          resultText.textContent = "Calculated via server";
+        }
+      } catch {
+        resultText.textContent = "Server error";
+      }
+    }
+  </script>
+</body>
+</html>
